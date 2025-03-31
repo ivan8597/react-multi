@@ -1,0 +1,13 @@
+/* Основные стили для приложения */
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: #1a1a1a;
+}
+
+.App {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+} 
