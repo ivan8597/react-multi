@@ -1,5 +1,6 @@
 import React, { useRef, Component } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import { RootState } from '../redux/store';
 import { 
   randomizeCubeColor, 
@@ -244,7 +245,9 @@ class ErrorBoundary extends Component<
           zIndex: 1001,
           fontFamily: 'monospace'
         }}>
-          <h3 style={{ margin: '0 0 10px 0', color: '#fff' }}>Произошла ошибка</h3>
+          <h3 style={{ margin: '0 0 10px 0', color: '#fff' }}>
+            {window.i18n?.t('errors.errorOccurred') || 'Произошла ошибка'}
+          </h3>
           <pre style={{ 
             margin: 0,
             whiteSpace: 'pre-wrap',
@@ -270,7 +273,7 @@ class ErrorBoundary extends Component<
               fontWeight: 'bold'
             }}
           >
-            Перезагрузить страницу
+            {window.i18n?.t('errors.reloadPage') || 'Перезагрузить страницу'}
           </button>
         </div>
       );
@@ -294,6 +297,7 @@ const Controls = () => {
     objectType,
     textureType
   } = useSelector((state: RootState) => state.scene);
+  const { t } = useTranslation();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -339,7 +343,7 @@ const Controls = () => {
     <ControlPanel>
       <Button 
         onClick={() => dispatch(randomizeCubeColor())} 
-        title="Случайный цвет"
+        title={t('controls.randomColor')}
       >
         <ColorLensIcon />
       </Button>
@@ -347,28 +351,28 @@ const Controls = () => {
       <ShapeControls>
         <ShapeButton 
           onClick={() => handleShapeChange('cube')}
-          title="Куб"
+          title={t('controls.cube')}
           $active={objectType === 'cube'}
         >
           <Cube />
         </ShapeButton>
         <ShapeButton 
           onClick={() => handleShapeChange('sphere')}
-          title="Сфера"
+          title={t('controls.sphere')}
           $active={objectType === 'sphere'}
         >
           <Sphere />
         </ShapeButton>
         <ShapeButton 
           onClick={() => handleShapeChange('torus')}
-          title="Тор"
+          title={t('controls.torus')}
           $active={objectType === 'torus'}
         >
           <Torus />
         </ShapeButton>
         <ShapeButton 
           onClick={() => handleShapeChange('cylinder')}
-          title="Цилиндр"
+          title={t('controls.cylinder')}
           $active={objectType === 'cylinder'}
         >
           <ViewColumnIcon />
@@ -380,28 +384,28 @@ const Controls = () => {
           $active={textureType === 'none'}
           onClick={() => handleTextureChange('none')}
         >
-          <TextureIcon /> Без текстуры
+          <TextureIcon /> {t('controls.noTexture')}
         </TextureButton>
         <TextureButton 
           $active={textureType === 'wood'}
           onClick={() => handleTextureChange('wood')}
         >
-          <TextureIcon /> Дерево
+          <TextureIcon /> {t('controls.wood')}
         </TextureButton>
         <TextureButton 
           $active={textureType === 'metal'}
           onClick={() => handleTextureChange('metal')}
         >
-          <TextureIcon /> Металл
+          <TextureIcon /> {t('controls.metal')}
         </TextureButton>
         <TextureButton 
           $active={textureType === 'brick'}
           onClick={() => handleTextureChange('brick')}
         >
-          <TextureIcon /> Кирпич
+          <TextureIcon /> {t('controls.brick')}
         </TextureButton>
         <TextureButton onClick={handleFileSelect}>
-          <TextureIcon /> Загрузить свою текстуру
+          <TextureIcon /> {t('controls.uploadTexture')}
         </TextureButton>
         <HiddenFileInput
           ref={fileInputRef}

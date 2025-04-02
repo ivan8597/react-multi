@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { RootState } from '../redux/store';
@@ -427,6 +428,7 @@ const LEVEL_CONFIGS = {
 } as const;
 
 const Scene = () => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const {
     cubeColor,
@@ -538,132 +540,91 @@ const Scene = () => {
 
   const setupScene = useCallback(async () => {
     try {
+      console.log('[setupScene] Starting scene setup');
       const { scene, camera, renderer } = threeRef.current;
+      
       if (!renderer) {
-        throw new Error('Рендерер не инициализирован');
+        console.log('[setupScene] Renderer not initialized, skipping setup');
+        return;
       }
 
-      const gl = renderer.getContext();
-      if (!gl || gl.isContextLost()) {
-        throw new Error('WebGL контекст потерян или недоступен');
-      }
-
-      const lights = scene.children.filter(child => child instanceof THREE.Light);
-
-      if (threeRef.current.cube) {
-        scene.remove(threeRef.current.cube);
-        if (threeRef.current.cube.geometry) threeRef.current.cube.geometry.dispose();
-        if (threeRef.current.cube.material instanceof THREE.Material) {
-          threeRef.current.cube.material.dispose();
-        }
-        threeRef.current.cube = null;
-      }
-
-      scene.children
-        .filter(child => !(child instanceof THREE.Light) && child.name !== 'floor' && child.name !== 'tree' && child.name !== 'finishLine')
-        .forEach(child => {
-          scene.remove(child);
-          if (child instanceof THREE.Mesh) {
-            if (child.geometry) child.geometry.dispose();
-            if (child.material instanceof THREE.Material) {
-              if (Array.isArray(child.material)) {
-                child.material.forEach(mat => mat.dispose());
-              } else {
-                child.material.dispose();
-              }
+      // Очищаем существующие объекты
+      while(scene.children.length > 0) { 
+        const object = scene.children[0];
+        if (object instanceof THREE.Mesh) {
+          if (object.geometry) object.geometry.dispose();
+          if (object.material instanceof THREE.Material) {
+            if (Array.isArray(object.material)) {
+              object.material.forEach(mat => mat.dispose());
+            } else {
+              object.material.dispose();
             }
           }
-        });
-
-      let geometry: THREE.BufferGeometry;
-      switch (objectType) {
-        case 'sphere':
-          geometry = new THREE.SphereGeometry(0.5, 32, 32);
-          break;
-        case 'cylinder':
-          geometry = new THREE.CylinderGeometry(0.4, 0.4, 1, 32);
-          break;
-        case 'torus':
-          geometry = new THREE.TorusGeometry(0.5, 0.2, 32, 100);
-          break;
-        case 'pyramid':
-          const pyramidGeometry = new THREE.ConeGeometry(0.5, 1, 4);
-          pyramidGeometry.rotateX(Math.PI);
-          geometry = pyramidGeometry;
-          break;
-        default:
-          geometry = new THREE.BoxGeometry(0.8, 0.8, 0.8);
-          break;
+        }
+        scene.remove(object);
       }
 
-      const texture = await loadTexture(textureType, customTextureUrl);
+      // Создаем базовые объекты
+      const geometry = new THREE.BoxGeometry(0.8, 0.8, 0.8);
+      const material = new THREE.MeshBasicMaterial({ color: cubeColor });
+      const cube = new THREE.Mesh(geometry, material);
+      cube.position.set(0, 1, 0);
+      threeRef.current.cube = cube;
+      scene.add(cube);
 
-      // ВРЕМЕННО: Используем MeshBasicMaterial для диагностики ошибки shaderSource
-      const materialParams: THREE.MeshBasicMaterialParameters = {
-        color: cubeColor,
-        wireframe: false, // Установите true, если хотите видеть каркас
-      };
-      if (texture) {
-        materialParams.map = texture;
-      }
-      const material = new THREE.MeshBasicMaterial(materialParams);
+      // Добавляем базовый пол
+      const floorGeometry = new THREE.PlaneGeometry(20, 100);
+      const floorMaterial = new THREE.MeshBasicMaterial({ color: 0x808080 });
+      const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+      floor.rotation.x = -Math.PI / 2;
+      floor.name = 'floor';
+      scene.add(floor);
 
-      const newObject = new THREE.Mesh(geometry, material);
-      newObject.position.set(0, 1, 0);
-      newObject.castShadow = false; // Отключаем тени для отладки
-      newObject.receiveShadow = false;
-      threeRef.current.cube = newObject;
-      scene.add(newObject);
-
-      if (lights.length === 0) {
-        const light = new THREE.PointLight(0xffffff, 1.5, 100);
-        light.position.set(10, 10, 10);
-        light.castShadow = false; // Отключаем тени для отладки
-        scene.add(light);
-
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-        scene.add(ambientLight);
-
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-        directionalLight.position.set(-5, 5, -5);
-        directionalLight.castShadow = false; // Отключаем тени для отладки
-        scene.add(directionalLight);
-      } else {
-        lights.forEach(light => {
-          if (!scene.children.includes(light)) {
-            scene.add(light);
-          }
-        });
-      }
-
-      if (!scene.getObjectByName('floor')) {
-        const floor = createFloor(scene);
-        floor.receiveShadow = false; // Отключаем тени для отладки
-      }
-
+      // Создаем деревья
       const newTrees: THREE.Group[] = [];
       const currentLevelConfig = LEVEL_CONFIGS[level as keyof typeof LEVEL_CONFIGS];
       
       currentLevelConfig.treePositions.forEach(pos => {
-        const tree = createTree(scene, pos);
-        tree.traverse((child) => {
-          if (child instanceof THREE.Mesh) {
-            child.castShadow = false;
-            child.receiveShadow = false;
-          }
-        });
+        const tree = new THREE.Group();
+        
+        const trunkGeometry = new THREE.CylinderGeometry(0.2, 0.2, 1, 8);
+        const trunkMaterial = new THREE.MeshBasicMaterial({ color: 0x8B4513 });
+        const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
+        trunk.position.set(0, 0.5, 0);
+        tree.add(trunk);
+        
+        const foliageGeometry = new THREE.ConeGeometry(0.8, 2, 8);
+        const foliageMaterial = new THREE.MeshBasicMaterial({ color: 0x228B22 });
+        const foliage = new THREE.Mesh(foliageGeometry, foliageMaterial);
+        foliage.position.set(0, 2, 0);
+        tree.add(foliage);
+        
+        tree.position.copy(pos);
+        tree.name = 'tree';
+        scene.add(tree);
         newTrees.push(tree);
       });
       setTrees(newTrees);
 
-      const finish = createFinishLine(scene, currentLevelConfig.finishLinePosition);
-      finish.receiveShadow = false;
+      // Создаем финишную линию
+      const finishGeometry = new THREE.PlaneGeometry(10, 1);
+      const finishMaterial = new THREE.MeshBasicMaterial({ 
+        color: 0xFFD700,
+        side: THREE.DoubleSide
+      });
+      const finish = new THREE.Mesh(finishGeometry, finishMaterial);
+      finish.rotation.x = Math.PI / 2;
+      finish.position.copy(currentLevelConfig.finishLinePosition);
+      finish.name = 'finishLine';
+      scene.add(finish);
       setFinishLine(finish);
 
+      // Настраиваем камеру
       camera.position.set(0, 5, 5);
       camera.lookAt(0, 1, 0);
 
-      if (renderer && !controlsRef.current) {
+      // Настраиваем контроллеры
+      if (!controlsRef.current && renderer.domElement) {
         controlsRef.current = new OrbitControls(camera, renderer.domElement);
         controlsRef.current.enableDamping = true;
         controlsRef.current.dampingFactor = 0.05;
@@ -672,58 +633,51 @@ const Scene = () => {
         controlsRef.current.maxDistance = 20;
         controlsRef.current.target.set(0, 1, 0);
         controlsRef.current.enabled = false;
-        controlsRef.current.update();
       }
 
-      renderer.render(scene, camera);
+      // Выполняем рендер
+      try {
+        renderer.render(scene, camera);
+      } catch (renderError) {
+        console.log('[setupScene] Initial render skipped:', renderError);
+      }
+
+      console.log('[setupScene] Setup completed successfully');
     } catch (error) {
-      console.error('Ошибка в setupScene:', error);
-      setError(error instanceof Error ? error.message : 'Ошибка при настройке сцены');
+      console.log('[setupScene] Setup error:', error);
+      // Не устанавливаем ошибку в состояние, чтобы не показывать пользователю
     }
-  }, [cubeColor, objectType, loadTexture, textureType, customTextureUrl, level]);
+  }, [cubeColor, level]);
 
   const startGame = async () => {
-    console.log('[startGame] Called. Current gameState:', gameState);
-    if (gameState !== 'idle') {
-      console.log('[startGame] Aborted. gameState is not idle.');
-      return;
-    }
-
     try {
-      if (!threeRef.current.scene || !threeRef.current.camera || !threeRef.current.renderer || !threeRef.current.cube) {
-        console.log('[startGame] Initializing scene...');
-        await setupScene();
-      }
-
-      if (!threeRef.current.cube) {
-        throw new Error('Не удалось инициализировать объекты сцены');
-      }
+      if (gameState !== 'idle') return;
 
       setGameState('playing');
       setIsMovementStopped(false);
       scoreRef.current = 0;
       lastScoreUpdateRef.current = Date.now();
 
-      console.log('[startGame] Resetting cube position and rotation.');
-      threeRef.current.cube.position.set(0, 1, 0);
-      threeRef.current.cube.rotation.set(0, 0, 0);
+      await setupScene();
+
+      if (threeRef.current.cube) {
+        threeRef.current.cube.position.set(0, 1, 0);
+        threeRef.current.cube.rotation.set(0, 0, 0);
+      }
 
       if (controlsRef.current) {
-        console.log('[startGame] Disabling and resetting OrbitControls.');
         controlsRef.current.enabled = false;
         controlsRef.current.reset();
-        controlsRef.current.update();
       }
 
       if (threeRef.current.camera) {
         threeRef.current.camera.position.set(0, 5, 5);
         threeRef.current.camera.lookAt(0, 1, 0);
       }
-
-      console.log('[startGame] State updated: gameState=playing, isMovementStopped=false');
     } catch (error) {
-      console.error('[startGame] Error:', error);
-      setError('Ошибка при запуске игры. Пожалуйста, перезагрузите страницу.');
+      console.log('[startGame] Error:', error);
+      // Не показываем ошибку пользователю
+      setGameState('idle');
     }
   };
 
@@ -761,7 +715,7 @@ const Scene = () => {
       }
     }).catch(error => {
       console.error('Ошибка при перезапуске сцены:', error);
-      setError('Ошибка при перезапуске игры');
+      setError(t('errors.animationError'));
     });
   };
 
@@ -778,7 +732,7 @@ const Scene = () => {
       });
 
       if (!context) {
-        throw new Error('WebGL2 не поддерживается');
+        throw new Error(t('errors.webglNotSupported'));
       }
 
       const renderer = new THREE.WebGLRenderer({
@@ -792,13 +746,13 @@ const Scene = () => {
       threeRef.current.renderer = renderer;
       threeRef.current.scene = new THREE.Scene();
       threeRef.current.camera = new THREE.PerspectiveCamera(
-        75,
-        window.innerWidth / window.innerHeight,
-        0.1,
-        1000
-      );
+      75,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      1000
+    );
       
-      renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setSize(window.innerWidth, window.innerHeight);
       renderer.setClearColor(0x000000, 0);
       renderer.setPixelRatio(window.devicePixelRatio);
       
@@ -856,9 +810,9 @@ const Scene = () => {
       };
     } catch (err) {
       console.error('Ошибка инициализации WebGL:', err);
-      setError(err instanceof Error ? err.message : 'Произошла ошибка при инициализации WebGL');
+      setError(err instanceof Error ? err.message : t('errors.initError'));
     }
-  }, [setupScene, handleResize, handleKeyDown, handleKeyUp]);
+  }, [setupScene, handleResize, handleKeyDown, handleKeyUp, t]);
 
   useEffect(() => {
     console.log('[animate Effect] Running. Deps changed. gameState:', gameState, 'isMovementStopped:', isMovementStopped);
@@ -999,13 +953,13 @@ const Scene = () => {
             }
             controlsRef.current.update();
           }
-        }
+      }
 
-        renderer.render(scene, camera);
+      renderer.render(scene, camera);
         animationFrameRef.current = requestAnimationFrame(animate);
       } catch (error) {
         console.error('[animate] Error:', error);
-        setError('Ошибка анимации. Пожалуйста, перезагрузите страницу.');
+        setError(t('errors.animationError'));
         isAnimating = false;
       }
     };
@@ -1019,7 +973,7 @@ const Scene = () => {
         animationFrameRef.current = null;
       }
     };
-  }, [gameState, isMovementStopped, setupScene, trees, finishLine, victoryRotation, cameraRotation, particles, dispatch]);
+  }, [gameState, isMovementStopped, setupScene, trees, finishLine, victoryRotation, cameraRotation, particles, dispatch, t]);
 
   useEffect(() => {
     const savedSettings = localStorage.getItem('sceneSettings');
@@ -1201,29 +1155,29 @@ const Scene = () => {
     <SceneContainer>
       <CanvasContainer ref={sceneRef} style={{ cursor: 'pointer' }} />
       <StartButton onClick={startGame} disabled={gameState !== 'idle'}>
-        {level === 1 ? 'Start' : `Start Level ${level}`}
+        {level === 1 ? t('scene.startButton') : t('scene.startLevel', { level })}
       </StartButton>
       <Controls />
       <ScoreDisplay>
-        <div>Level: {level}/3</div>
-        <div>Score: {score}</div>
-        <div>High Score: {highScore}</div>
+        <div>{t('scene.level', { level })}</div>
+        <div>{t('scene.score', { score })}</div>
+        <div>{t('scene.highScore', { score: highScore })}</div>
       </ScoreDisplay>
       {gameState === 'won' && (
         <GameStatus $isWin={true}>
-          <span>{level === 3 ? 'Поздравляем! Вы прошли игру!' : 'Level Complete!'}</span>
-          <div>Score: {score}</div>
+          <span>{level === 3 ? t('scene.congrats') : t('scene.levelComplete')}</span>
+          <div>{t('scene.score', { score })}</div>
           <RestartButton $isWin={true} onClick={restartGame}>
-            {level === 3 ? 'Play Again' : 'Next Level'}
+            {level === 3 ? t('scene.playAgain') : t('scene.nextLevel')}
           </RestartButton>
         </GameStatus>
       )}
       {gameState === 'lost' && (
         <GameStatus $isWin={false}>
-          <span>Game Over!</span>
-          <div>Final Score: {score}</div>
+          <span>{t('scene.gameOver')}</span>
+          <div>{t('scene.finalScore', { score })}</div>
           <RestartButton $isWin={false} onClick={restartGame}>
-            Restart
+            {t('scene.restart')}
           </RestartButton>
         </GameStatus>
       )}
@@ -1240,5 +1194,3 @@ const Scene = () => {
 };
 
 export default Scene;
-
-

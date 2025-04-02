@@ -1,0 +1,35 @@
+{
+  "scene": {
+    "startButton": "Старт",
+    "startLevel": "Начать уровень {{level}}",
+    "level": "Уровень: {{level}}/3",
+    "score": "Очки: {{score}}",
+    "highScore": "Рекорд: {{score}}",
+    "gameOver": "Игра окончена!",
+    "finalScore": "Итоговые очки: {{score}}",
+    "restart": "Начать заново",
+    "congrats": "Поздравляем! Вы прошли игру!",
+    "levelComplete": "Уровень пройден!",
+    "playAgain": "Играть снова",
+    "nextLevel": "Следующий уровень"
+  },
+  "controls": {
+    "randomColor": "Случайный цвет",
+    "cube": "Куб",
+    "sphere": "Сфера",
+    "torus": "Тор",
+    "cylinder": "Цилиндр",
+    "noTexture": "Без текстуры",
+    "wood": "Дерево",
+    "metal": "Металл",
+    "brick": "Кирпич",
+    "uploadTexture": "Загрузить свою текстуру"
+  },
+  "errors": {
+    "webglNotSupported": "WebGL2 не поддерживается",
+    "initError": "Ошибка инициализации WebGL",
+    "animationError": "Ошибка анимации. Пожалуйста, перезагрузите страницу.",
+    "errorOccurred": "Произошла ошибка",
+    "reloadPage": "Перезагрузить страницу"
+  }
+} 

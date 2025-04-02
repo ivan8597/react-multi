@@ -1,0 +1,35 @@
+{
+  "scene": {
+    "startButton": "Start",
+    "startLevel": "Start Level {{level}}",
+    "level": "Level: {{level}}/3",
+    "score": "Score: {{score}}",
+    "highScore": "High Score: {{score}}",
+    "gameOver": "Game Over!",
+    "finalScore": "Final Score: {{score}}",
+    "restart": "Restart",
+    "congrats": "Congratulations! You completed the game!",
+    "levelComplete": "Level Complete!",
+    "playAgain": "Play Again",
+    "nextLevel": "Next Level"
+  },
+  "controls": {
+    "randomColor": "Random Color",
+    "cube": "Cube",
+    "sphere": "Sphere",
+    "torus": "Torus",
+    "cylinder": "Cylinder",
+    "noTexture": "No texture",
+    "wood": "Wood",
+    "metal": "Metal",
+    "brick": "Brick",
+    "uploadTexture": "Upload your texture"
+  },
+  "errors": {
+    "webglNotSupported": "WebGL2 is not supported",
+    "initError": "Error initializing WebGL",
+    "animationError": "Animation error. Please reload the page.",
+    "errorOccurred": "An error occurred",
+    "reloadPage": "Reload page"
+  }
+} 

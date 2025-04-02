@@ -11,6 +11,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 export type ObjectType = 'cube' | 'sphere' | 'torus' | 'pyramid' | 'cylinder';
 export type TextureType = 'none' | 'wood' | 'metal' | 'brick' | 'custom';
+export type GameState = 'idle' | 'playing' | 'won' | 'lost';
 
 export interface SceneState {
   cubeColor: number;
@@ -21,6 +22,7 @@ export interface SceneState {
   highScore: number;
   level: number;
   maxLevel: number;
+  gameState: GameState;
 }
 
 const initialState: SceneState = {
@@ -31,7 +33,8 @@ const initialState: SceneState = {
   score: 0,
   highScore: 0,
   level: 1,
-  maxLevel: 3
+  maxLevel: 3,
+  gameState: 'idle'
 };
 
 // Создание slice для управления состоянием сцены
@@ -74,6 +77,9 @@ const sceneSlice = createSlice({
     },
     resetLevel: (state) => {
       state.level = 1;
+    },
+    setGameState: (state, action: PayloadAction<GameState>) => {
+      state.gameState = action.payload;
     }
   },
 });
@@ -89,7 +95,8 @@ export const {
   resetScore,
   setLevel,
   nextLevel,
-  resetLevel
+  resetLevel,
+  setGameState
 } = sceneSlice.actions;
 
 // Экспорт reducer для конфигурации store

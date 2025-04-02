@@ -4,8 +4,12 @@ import { createAction } from '@reduxjs/toolkit';
 // Действия для саги
 export const initAudio = createAction('audio/init');
 export const toggleAudio = createAction<boolean>('audio/toggle');
-export const playWinSoundAction = createAction('audio/playWin');
-export const playLoseSoundAction = createAction('audio/playLose');
+export const playWinSoundAction = createAction('audio/playWin', () => ({
+  payload: undefined
+}));
+export const playLoseSoundAction = createAction('audio/playLose', () => ({
+  payload: undefined
+}));
 
 // Создаем AudioContext и осциллятор
 let audioContext: AudioContext | null = null;
