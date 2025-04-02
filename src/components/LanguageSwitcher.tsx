@@ -4,8 +4,8 @@ import styled from 'styled-components';
 
 const SwitcherContainer = styled.div`
   position: fixed;
-  top: 20px;
-  right: 20px;
+  top: 90px;
+  left: 90px;
   z-index: 1001;
   display: flex;
   gap: 5px;

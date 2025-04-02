@@ -15,7 +15,9 @@ import {
 } from '../redux/sceneSlice';
 import styled, { keyframes } from 'styled-components';
 import CloseIcon from '@mui/icons-material/Close';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import Controls from './Controls';
+import Instructions from './Instructions';
 import { playWinSoundAction, playLoseSoundAction } from '../redux/audioSagas';
 
 const SceneContainer = styled.div`
@@ -178,6 +180,28 @@ const ScoreDisplay = styled.div`
   flex-direction: column;
   gap: 5px;
   z-index: 1000;
+`;
+
+const InstructionsButton = styled.button`
+  position: fixed;
+  top: 90px;
+  right: 90px;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1001;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.9);
+    transform: scale(1.1);
+  }
 `;
 
 const TEXTURE_PATHS = {
@@ -449,6 +473,7 @@ const Scene = () => {
   const [cameraRotation, setCameraRotation] = useState(true);
   const [particles, setParticles] = useState<THREE.Points | null>(null);
   const [isMovementStopped, setIsMovementStopped] = useState(false);
+  const [showInstructions, setShowInstructions] = useState(false);
 
   const sceneRef = useRef<HTMLDivElement>(null);
   const animationFrameRef = useRef<number | null>(null);
@@ -1158,6 +1183,13 @@ const Scene = () => {
         {level === 1 ? t('scene.startButton') : t('scene.startLevel', { level })}
       </StartButton>
       <Controls />
+      <InstructionsButton onClick={() => setShowInstructions(true)}>
+        <HelpOutlineIcon />
+      </InstructionsButton>
+      <Instructions 
+        isVisible={showInstructions} 
+        onClose={() => setShowInstructions(false)} 
+      />
       <ScoreDisplay>
         <div>{t('scene.level', { level })}</div>
         <div>{t('scene.score', { score })}</div>
