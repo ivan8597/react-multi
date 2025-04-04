@@ -18,6 +18,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import Controls from './Controls';
 import Instructions from './Instructions';
+import LanguageSwitcher from './LanguageSwitcher';
 import { playWinSoundAction, playLoseSoundAction } from '../redux/audioSagas';
 
 const SceneContainer = styled.div`
@@ -1183,6 +1184,7 @@ const Scene = () => {
         {level === 1 ? t('scene.startButton') : t('scene.startLevel', { level })}
       </StartButton>
       <Controls />
+      <LanguageSwitcher />
       <InstructionsButton onClick={() => setShowInstructions(true)}>
         <HelpOutlineIcon />
       </InstructionsButton>

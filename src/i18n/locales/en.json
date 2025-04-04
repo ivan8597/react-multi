@@ -1,4 +1,10 @@
 {
+  "startPage": {
+    "title": "3D Runner",
+    "subtitle": "Welcome to an exciting 3D game! Complete all levels, avoid obstacles and set new records.",
+    "play": "Play",
+    "howToPlay": "How to Play"
+  },
   "scene": {
     "startButton": "Start",
     "startLevel": "Start Level {{level}}",
@@ -8,10 +14,32 @@
     "gameOver": "Game Over!",
     "finalScore": "Final Score: {{score}}",
     "restart": "Restart",
-    "congrats": "Congratulations! You completed the game!",
+    "congrats": "Congratulations! You've completed the game!",
     "levelComplete": "Level Complete!",
     "playAgain": "Play Again",
     "nextLevel": "Next Level"
+  },
+  "instructions": {
+    "title": "How to Play",
+    "description": "Welcome to the 3D Game!",
+    "controls": {
+      "title": "Controls",
+      "movement": "Use A/D keys or Left/Right arrows to move",
+      "objective": "Reach the finish line while avoiding collisions with obstacles"
+    },
+    "levels": {
+      "title": "Levels",
+      "description": "The game consists of 3 levels with increasing difficulty",
+      "level1": "Level 1: Simple track with basic obstacles",
+      "level2": "Level 2: More obstacles and a more complex track",
+      "level3": "Level 3: Complex track with multiple obstacles"
+    },
+    "scoring": {
+      "title": "Scoring System",
+      "points": "Earn points based on completion time",
+      "highscore": "Beat your high score!"
+    },
+    "close": "Close Instructions"
   },
   "controls": {
     "randomColor": "Random Color",
@@ -19,17 +47,17 @@
     "sphere": "Sphere",
     "torus": "Torus",
     "cylinder": "Cylinder",
-    "noTexture": "No texture",
+    "noTexture": "No Texture",
     "wood": "Wood",
     "metal": "Metal",
     "brick": "Brick",
-    "uploadTexture": "Upload your texture"
+    "uploadTexture": "Upload Texture"
   },
   "errors": {
     "webglNotSupported": "WebGL2 is not supported",
-    "initError": "Error initializing WebGL",
+    "initError": "WebGL initialization error",
     "animationError": "Animation error. Please reload the page.",
     "errorOccurred": "An error occurred",
-    "reloadPage": "Reload page"
+    "reloadPage": "Reload Page"
   }
 } 

@@ -4,8 +4,8 @@ import styled from 'styled-components';
 
 const SwitcherContainer = styled.div`
   position: fixed;
-  top: 90px;
-  left: 90px;
+  top: 20px;
+  left: 190px;
   z-index: 1001;
   display: flex;
   gap: 5px;
@@ -31,6 +31,7 @@ const LanguageSwitcher: React.FC = () => {
   const { i18n } = useTranslation();
   
   const changeLanguage = (lng: string) => {
+    console.log('Changing language to:', lng);
     i18n.changeLanguage(lng);
   };
   
